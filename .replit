@@ -39,3 +39,7 @@ author = "agent"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "uv add transformers torch plotly"
+
+[[ports]]
+localPort = 5000
+externalPort = 80

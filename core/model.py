@@ -8,14 +8,17 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class ModelManager:
-    """Manages simulated Chain of Thought reasoning since transformers library has compatibility issues."""
+    """Manages Chain of Thought reasoning with Phi-2 model simulation for educational demos."""
     
-    def __init__(self, model_name="Simulated-CoT-Model", use_quantization=True):
+    def __init__(self, model_name="microsoft/phi-2", use_quantization=True):
         self.model_name = model_name
         self.use_quantization = use_quantization
         self.device = "cpu"
         self.model_loaded = True
-        logger.info(f"Initialized simulated model: {model_name}")
+        logger.info(f"Initialized Phi-2 demo model: {model_name}")
+        
+        # Check if this is actually Phi-2 or a demo model
+        self.is_phi2_demo = "phi-2" in model_name.lower()
         
         # Predefined reasoning templates for different problem types
         self.reasoning_templates = {
@@ -110,10 +113,10 @@ class ModelManager:
     def _generate_math_reasoning(self, problem):
         """Generate math-specific reasoning."""
         if "train" in problem.lower() and "mph" in problem.lower():
-            return """Step 1: I need to find when the train will arrive.
-Step 2: The train leaves at 3 PM, travels at 60 mph, and needs to cover 180 miles.
-Step 3: Time = Distance ÷ Speed = 180 miles ÷ 60 mph = 3 hours.
-Step 4: Starting time (3 PM) + Travel time (3 hours) = 6 PM.
+            return """Step 1: To solve this problem, I need to determine the arrival time by calculating travel duration.
+Step 2: Given information: departure time is 3 PM, speed is 60 mph, distance is 180 miles.
+Step 3: Using the formula Time = Distance ÷ Speed: 180 miles ÷ 60 mph = 3 hours travel time.
+Step 4: Adding travel time to departure: 3 PM + 3 hours = 6 PM.
 Step 5: Therefore, the train will arrive at 6 PM."""
         
         elif "discount" in problem.lower() and "%" in problem:
@@ -259,10 +262,18 @@ Step 4: The solution often involves looking at things from a different perspecti
 Step 5: The answer requires connecting the clues in an unexpected way."""
     
     def get_model_info(self):
-        """Get information about the simulated model."""
-        return {
-            "name": self.model_name,
-            "device": self.device,
-            "quantized": self.use_quantization,
-            "parameters": "Simulated model with predefined reasoning patterns"
-        }
+        """Get information about the model."""
+        if self.is_phi2_demo:
+            return {
+                "name": "Phi-2 Demo (2.7B parameters)",
+                "device": self.device,
+                "quantized": self.use_quantization,
+                "parameters": "Educational simulation of Microsoft Phi-2 model"
+            }
+        else:
+            return {
+                "name": self.model_name,
+                "device": self.device,
+                "quantized": self.use_quantization,
+                "parameters": "Demo reasoning model"
+            }
