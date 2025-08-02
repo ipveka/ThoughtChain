@@ -5,6 +5,11 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 import re
 from typing import Optional, Dict, Any
 import gc
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -36,14 +41,30 @@ class ModelManager:
         else:
             return "cpu"
     
+    def _get_auth_token(self):
+        """Get authentication token from environment variables."""
+        token = os.getenv('HUGGINGFACE_TOKEN')
+        if not token or token == 'your_token_here':
+            raise ValueError(
+                "Hugging Face token not found. Please:\n"
+                "1. Get your token from https://huggingface.co/settings/tokens\n"
+                "2. Update the .env file with: HUGGINGFACE_TOKEN=your_actual_token"
+            )
+        return token
+    
     def _load_model(self):
         """Load the Phi-2 model and tokenizer."""
         try:
+            # Get authentication token
+            auth_token = self._get_auth_token()
+            logger.info("Authentication token loaded successfully")
+            
             logger.info("Loading tokenizer...")
             self.tokenizer = AutoTokenizer.from_pretrained(
                 self.model_name,
                 trust_remote_code=True,
-                padding_side="left"
+                padding_side="left",
+                token=auth_token
             )
             
             # Add padding token if not present
@@ -71,7 +92,8 @@ class ModelManager:
                 device_map="auto" if self.device == "cuda" else None,
                 quantization_config=quantization_config,
                 trust_remote_code=True,
-                low_cpu_mem_usage=True
+                low_cpu_mem_usage=True,
+                token=auth_token
             )
             
             # Move to device if not using device_map
@@ -86,7 +108,7 @@ class ModelManager:
             self.model_loaded = False
             raise e
     
-    def generate_response(self, prompt: str, max_length: int = 512, temperature: float = 0.7, 
+    def generate_response(self, prompt: str, max_length: int = 1024, temperature: float = 0.3, 
                          do_sample: bool = True, top_p: float = 0.9, top_k: int = 50) -> str:
         """Generate a real Chain of Thought response using the loaded model."""
         if not self.model_loaded or self.model is None or self.tokenizer is None:
@@ -104,7 +126,7 @@ class ModelManager:
                 return_tensors="pt",
                 padding=True,
                 truncation=True,
-                max_length=1024  # Limit input length
+                max_length=2048  # Increased input length limit
             ).to(self.device)
             
             # Generate response
@@ -120,7 +142,8 @@ class ModelManager:
                     eos_token_id=self.tokenizer.eos_token_id,
                     repetition_penalty=1.1,
                     length_penalty=1.0,
-                    early_stopping=True
+                    # Remove early_stopping to avoid warnings when num_beams=1
+                    num_beams=1
                 )
             
             # Decode response

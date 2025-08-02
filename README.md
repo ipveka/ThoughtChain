@@ -18,6 +18,22 @@ A powerful Streamlit application that demonstrates **real Chain of Thought reaso
 - Python 3.11 or higher
 - 8GB+ RAM (16GB+ recommended)
 - GPU with 8GB+ VRAM (optional, but recommended for better performance)
+- Hugging Face account with access to Phi-2 model
+
+### Authentication Setup
+
+**Required:** Phi-2 is a gated model that requires authentication.
+
+1. **Get your Hugging Face token:**
+   - Go to [Hugging Face Settings](https://huggingface.co/settings/tokens)
+   - Create a new token with "Read" permissions
+   - Copy the token
+
+2. **Configure the token:**
+   ```bash
+   # Edit the .env file and replace 'your_token_here' with your actual token
+   HUGGINGFACE_TOKEN=your_actual_token_here
+   ```
 
 ### Installation
 
@@ -29,7 +45,10 @@ cd ThoughtChain
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Test installation (optional but recommended)
+# 3. Configure authentication (see above)
+# Edit .env file with your Hugging Face token
+
+# 4. Test installation (optional but recommended)
 python test_installation.py
 ```
 
@@ -43,6 +62,7 @@ python core/demo.py
 ```
 
 This demo will:
+- ✅ Check authentication token
 - ✅ Load the Phi-2 model
 - ✅ Test Chain of Thought generation
 - ✅ Verify problem type detection
@@ -65,9 +85,9 @@ Then open your browser to `http://localhost:8501`
 The application provides several configuration options in the sidebar:
 
 - **4-bit Quantization**: Reduces memory usage by ~50% with minimal performance impact
-- **Max Response Length**: Control the length of generated reasoning (100-1000 tokens)
-- **Temperature**: Controls randomness (0.1-1.5, higher = more creative)
-- **Top-p (Nucleus Sampling)**: Controls response diversity (0.1-1.0)
+- **Max Response Length**: Control the length of generated reasoning (100-2000 tokens, default: 1024)
+- **Temperature**: Controls randomness (0.1-1.5, default: 0.3, lower = more focused)
+- **Top-p (Nucleus Sampling)**: Controls response diversity (0.1-1.0, default: 0.9)
 
 ### Hardware Support
 
@@ -82,9 +102,10 @@ The application automatically detects and uses the best available hardware:
 ### 1. Initialize the Model
 
 1. Open the application in your browser
-2. In the sidebar, configure your preferred settings
-3. Click "🚀 Initialize Phi-2 Model"
-4. Wait for the model to load (may take 2-5 minutes on first run)
+2. Verify authentication status in the sidebar
+3. Configure your preferred settings
+4. Click "🚀 Initialize Phi-2 Model"
+5. Wait for the model to load (may take 2-5 minutes on first run)
 
 ### 2. Generate Reasoning
 
@@ -128,6 +149,7 @@ python core/demo.py
 ```
 
 **What the demo tests:**
+- Authentication token validation
 - Model loading and initialization
 - Chain of Thought generation for different problem types
 - Problem type detection accuracy
@@ -165,12 +187,14 @@ ThoughtChain/
 │   ├── step_display.py   # Step visualization components
 │   └── flowchart.py      # Interactive flowchart generation
 ├── requirements.txt      # Dependencies
+├── .env                  # Authentication configuration
 └── test_installation.py # Installation verification
 ```
 
 ### Model Management
 
 The `ModelManager` class handles:
+- Authentication token management
 - Automatic model loading with Hugging Face Transformers
 - Hardware detection and optimization
 - Memory management and cleanup
@@ -198,12 +222,15 @@ The `CoTGenerator` class provides:
 - **Framework**: Hugging Face Transformers
 - **Optimization**: Optional 4-bit quantization via BitsAndBytes
 - **Hardware**: CUDA/MPS/CPU support with automatic detection
+- **Authentication**: Required via Hugging Face token
 
 ### Performance Characteristics
 
 - **Memory Usage**: ~5GB with quantization, ~10GB without
 - **Generation Speed**: 2-10 seconds depending on hardware and response length
+- **Default Settings**: 1024 tokens max length, 0.3 temperature for focused reasoning
 - **Accuracy**: High-quality reasoning with step-by-step breakdowns
+- **Warnings**: Clean output with no user warnings about generation parameters
 
 ### Prompt Engineering
 
@@ -221,12 +248,18 @@ The application uses sophisticated prompt engineering:
    pip install -r requirements.txt
    ```
 
-2. **Run with development mode:**
+2. **Configure authentication:**
+   ```bash
+   # Edit .env file with your Hugging Face token
+   HUGGINGFACE_TOKEN=your_actual_token_here
+   ```
+
+3. **Run with development mode:**
    ```bash
    streamlit run app.py --server.port 8501 --server.address localhost
    ```
 
-3. **Test changes:**
+4. **Test changes:**
    ```bash
    python core/demo.py  # Test core functionality
    python test_installation.py  # Verify dependencies
@@ -244,6 +277,11 @@ The application uses sophisticated prompt engineering:
 ## 🐛 Troubleshooting
 
 ### Common Issues
+
+**Authentication Errors:**
+- Ensure your Hugging Face token is valid and has "Read" permissions
+- Check that the `.env` file contains the correct token
+- Verify you have access to the Phi-2 model on Hugging Face
 
 **Model Loading Fails:**
 - Ensure you have sufficient RAM (8GB+)
@@ -267,6 +305,7 @@ The application uses sophisticated prompt engineering:
 - Ensure all dependencies are installed: `pip install -r requirements.txt`
 - Check Python version: `python --version` (requires 3.11+)
 - Verify PyTorch installation: `python -c "import torch; print(torch.__version__)"`
+- Check authentication token configuration
 
 ### System Requirements
 
@@ -274,6 +313,7 @@ The application uses sophisticated prompt engineering:
 - Python 3.11+
 - 8GB RAM
 - 5GB free disk space
+- Hugging Face account with Phi-2 access
 
 **Recommended:**
 - Python 3.11+
