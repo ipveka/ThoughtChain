@@ -1,12 +1,27 @@
 [project]
-name = "repl-nix-workspace"
+name = "thoughtchain"
 version = "0.1.0"
-description = "Add your description here"
+description = "Chain of Thought Reasoning Visualizer with real Phi-2 model"
 requires-python = ">=3.11"
 dependencies = [
     "plotly>=6.2.0",
     "streamlit>=1.47.1",
     "torch>=2.7.1",
+    "transformers>=4.36.0",
+    "accelerate>=0.25.0",
+    "bitsandbytes>=0.41.0",
+    "sentencepiece>=0.1.99",
+    "protobuf>=4.25.0",
+    "huggingface-hub>=0.19.0",
+    "tokenizers>=0.15.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
 ]
 
 [[tool.uv.index]]

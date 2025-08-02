@@ -1,0 +1,23 @@
+# Core dependencies
+streamlit>=1.47.1
+plotly>=6.2.0
+
+# PyTorch and ML framework
+torch>=2.7.1
+transformers>=4.36.0
+accelerate>=0.25.0
+
+# Model optimization
+bitsandbytes>=0.41.0
+
+# Tokenization and model loading
+sentencepiece>=0.1.99
+protobuf>=4.25.0
+huggingface-hub>=0.19.0
+tokenizers>=0.15.0
+
+# Optional: For better performance on Apple Silicon
+# torch-mps  # Uncomment if using Apple Silicon Mac
+
+# Optional: For CUDA support (usually included with torch)
+# torch-cuda  # Uncomment if you need explicit CUDA support 
