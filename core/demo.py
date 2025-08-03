@@ -36,6 +36,26 @@ def print_step(step_num, title, content=""):
         print(f"   {content}")
     print("-" * 40)
 
+def check_auth_token():
+    """Check if authentication token is properly configured."""
+    print_step(1, "Checking Authentication Token")
+    
+    # Load environment variables
+    from dotenv import load_dotenv
+    load_dotenv()
+    
+    token = os.getenv('HUGGINGFACE_TOKEN')
+    if not token or token == 'your_token_here':
+        print("   ❌ Authentication token not found or not configured")
+        print("   📝 Please:")
+        print("   1. Get your token from https://huggingface.co/settings/tokens")
+        print("   2. Update the .env file with: HUGGINGFACE_TOKEN=your_actual_token")
+        return False
+    else:
+        print("   ✅ Authentication token found")
+        print(f"   🔑 Token: {token[:10]}...{token[-10:] if len(token) > 20 else '***'}")
+        return True
+
 def demo_model_loading():
     """Demonstrate model loading process."""
     print_separator("MODEL LOADING DEMO")
@@ -70,7 +90,7 @@ def demo_cot_generation(model_manager):
     print_separator("CHAIN OF THOUGHT GENERATION DEMO")
     
     print_step(1, "Initializing CoT Generator")
-    cot_generator = CoTGenerator(model_manager, max_length=512)
+    cot_generator = CoTGenerator(model_manager, max_length=1024)
     print("   ✅ CoT Generator initialized")
     
     # Get example problems
@@ -102,7 +122,7 @@ def demo_cot_generation(model_manager):
             # Generate CoT response
             cot_response = cot_generator.generate_cot(
                 problem,
-                temperature=0.7,
+                temperature=0.3,
                 top_p=0.9
             )
             generation_time = time.time() - start_time
@@ -141,7 +161,7 @@ def demo_performance_testing(model_manager):
     """Demonstrate performance testing."""
     print_separator("PERFORMANCE TESTING")
     
-    cot_generator = CoTGenerator(model_manager, max_length=256)
+    cot_generator = CoTGenerator(model_manager, max_length=512)
     examples = ExampleProblems()
     
     # Test with a simple math problem
@@ -149,8 +169,8 @@ def demo_performance_testing(model_manager):
     
     print_step(1, "Performance Test Setup")
     print(f"   Test Problem: {test_problem}")
-    print(f"   Max Length: 256 tokens")
-    print(f"   Temperature: 0.7")
+    print(f"   Max Length: 512 tokens")
+    print(f"   Temperature: 0.3")
     
     print_step(2, "Running Performance Test")
     
@@ -163,7 +183,7 @@ def demo_performance_testing(model_manager):
         start_time = time.time()
         
         try:
-            response = cot_generator.generate_cot(test_problem, temperature=0.7)
+            response = cot_generator.generate_cot(test_problem, temperature=0.3)
             generation_time = time.time() - start_time
             
             times.append(generation_time)
@@ -224,6 +244,11 @@ def main():
     print_separator("THOUGHTCHAIN E2E DEMO")
     print("This demo will test the complete Chain of Thought reasoning pipeline")
     print("using the real Microsoft Phi-2 model.")
+    
+    # Check authentication first
+    if not check_auth_token():
+        print("\n❌ Authentication setup required. Please configure your Hugging Face token.")
+        return
     
     # Check if user wants to proceed
     try:

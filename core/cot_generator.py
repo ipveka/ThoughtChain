@@ -8,41 +8,56 @@ logger = logging.getLogger(__name__)
 class CoTGenerator:
     """Generates Chain of Thought reasoning using a real language model."""
     
-    def __init__(self, model_manager, max_length=512):
+    def __init__(self, model_manager, max_length=1024):
         self.model_manager = model_manager
         self.max_length = max_length
         
-        # Enhanced CoT prompting templates
+        # Enhanced CoT templates for better reasoning
         self.cot_templates = {
-            "general": """You are an AI assistant that thinks through problems step by step. Always show your reasoning process clearly.
+            "math": """Let's solve this step by step:
 
-        Problem: {problem}
+1) First, I need to understand what's being asked
+2) I'll break down the problem into smaller parts
+3) I'll perform calculations step by step
+4) I'll verify my answer makes sense
 
-        Let's think through this step by step:
+Problem: {problem}
 
-        """,
-                    "math": """You are an AI assistant that solves math problems step by step. Show all your calculations and reasoning clearly.
+Let me think through this:""",
+            
+            "logic": """Let's analyze this logically:
 
-        Problem: {problem}
+1) I'll identify the key information given
+2) I'll look for relationships and patterns
+3) I'll apply logical reasoning step by step
+4) I'll check if my conclusion follows from the premises
 
-        Let's solve this step by step:
+Problem: {problem}
 
-        """,
-                    "logic": """You are an AI assistant that analyzes logic problems step by step. Show your logical reasoning process clearly.
+Let me think through this:""",
+            
+            "riddle": """Let's solve this riddle:
 
-        Problem: {problem}
+1) I'll read the riddle carefully
+2) I'll look for wordplay and metaphors
+3) I'll consider different interpretations
+4) I'll think creatively about possible answers
 
-        Let's analyze this step by step:
+Problem: {problem}
 
-        """,
-                    "riddle": """You are an AI assistant that solves riddles step by step. Think creatively and show your reasoning process.
+Let me think through this:""",
+            
+            "general": """Let's think through this step by step:
 
-        Riddle: {problem}
+1) I'll understand the problem clearly
+2) I'll break it down into manageable parts
+3) I'll work through each part systematically
+4) I'll arrive at a well-reasoned conclusion
 
-        Let's think through this step by step:
+Problem: {problem}
 
-        """
-                }
+Let me think through this:"""
+        }
     
     def _detect_problem_type(self, problem: str) -> str:
         """Detect the type of problem to use appropriate template."""
@@ -75,33 +90,19 @@ class CoTGenerator:
         else:
             return "general"
     
-    def generate_cot(self, problem: str, temperature: float = 0.7, top_p: float = 0.9) -> str:
-        """Generate Chain of Thought reasoning for the given problem using the real model."""
+    def generate_cot(self, problem: str, temperature: float = 0.3, top_p: float = 0.9) -> str:
+        """Generate Chain of Thought reasoning for a given problem."""
+        if not self.model_manager or not self.model_manager.is_ready():
+            raise RuntimeError("Model not ready. Please initialize the model first.")
+        
         try:
-            if not self.model_manager.is_ready():
-                raise RuntimeError("Model is not ready. Please initialize the model first.")
-            
-            # Detect problem type and select appropriate template
-            problem_type = self._detect_problem_type(problem)
-            template = self.cot_templates[problem_type]
-            
-            # Format the prompt
-            prompt = template.format(problem=problem)
-            
-            logger.info(f"Generating CoT for problem type: {problem_type}")
-            start_time = time.time()
-            
-            # Generate response using the real model
+            # Generate response using the model manager
             response = self.model_manager.generate_response(
-                prompt, 
+                problem,
                 max_length=self.max_length,
                 temperature=temperature,
-                top_p=top_p,
-                do_sample=True
+                top_p=top_p
             )
-            
-            generation_time = time.time() - start_time
-            logger.info(f"Generated CoT response in {generation_time:.2f} seconds")
             
             return response
             

@@ -12,6 +12,16 @@ from core.examples import ExampleProblems
 from visualization.step_display import StepVisualizer
 from visualization.flowchart import FlowchartGenerator
 
+def check_auth_token():
+    """Check if authentication token is properly configured."""
+    from dotenv import load_dotenv
+    load_dotenv()
+    
+    token = os.getenv('HUGGINGFACE_TOKEN')
+    if not token or token == 'your_token_here':
+        return False, "Token not configured"
+    return True, f"Token: {token[:10]}...{token[-10:] if len(token) > 20 else '***'}"
+
 def main():
     st.set_page_config(
         page_title="Chain of Thought Visualizer",
@@ -34,9 +44,26 @@ def main():
     if 'model_loading' not in st.session_state:
         st.session_state.model_loading = False
     
+    # Check authentication first
+    auth_ok, auth_status = check_auth_token()
+    
     # Sidebar for model configuration
     with st.sidebar:
         st.header("⚙️ Model Configuration")
+        
+        # Authentication status
+        if auth_ok:
+            st.success("✅ Authentication Ready")
+            st.caption(auth_status)
+        else:
+            st.error("❌ Authentication Required")
+            st.markdown("""
+            **Setup Required:**
+            1. Get your token from [Hugging Face](https://huggingface.co/settings/tokens)
+            2. Update the `.env` file with your token
+            3. Restart the application
+            """)
+            st.stop()
         
         # Model status display
         if st.session_state.model_manager and st.session_state.model_manager.is_ready():
@@ -65,9 +92,9 @@ def main():
         max_length = st.slider(
             "Max Response Length", 
             min_value=100, 
-            max_value=1000, 
-            value=512, 
-            step=50,
+            max_value=2000, 
+            value=1024, 
+            step=100,
             help="Maximum number of tokens in the response"
         )
         
@@ -75,7 +102,7 @@ def main():
             "Temperature", 
             min_value=0.1, 
             max_value=1.5, 
-            value=0.7, 
+            value=0.3, 
             step=0.1,
             help="Controls randomness (higher = more creative, lower = more focused)"
         )
@@ -345,7 +372,6 @@ def main():
         except Exception as e:
             st.error(f"❌ Error generating response: {str(e)}")
             st.info("Try adjusting the model settings or rephrasing your problem.")
-            # logger.error(f"Generation error: {e}") # This line was commented out in the original file, so it's commented out here.
 
 if __name__ == "__main__":
     main()
